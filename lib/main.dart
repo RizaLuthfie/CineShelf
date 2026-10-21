@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'constants/app_colors.dart';
+import 'routes/app_routes.dart';
+import 'screens/detail_screen.dart';
+import 'screens/main_screen.dart';
 
 void main() {
   runApp(const CineShelfApp());
@@ -11,20 +15,25 @@ class CineShelfApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'CineShelf',
-      theme: ThemeData(primarySwatch: Colors.indigo),
-      home: const HomeScreen(),
-    );
-  }
-}
-
-class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('CineShelf')),
-      body: const Center(child: Text('Selamat datang di CineShelf')),
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        brightness: Brightness.dark,
+        scaffoldBackgroundColor: kNavy,
+        colorScheme: const ColorScheme.dark(primary: kOrange),
+      ),
+      initialRoute: AppRoutes.home,
+      routes: {
+        AppRoutes.home: (context) => const MainScreen(),
+      },
+      onGenerateRoute: (settings) {
+        if (settings.name == AppRoutes.detail) {
+          final movieId = settings.arguments as int;
+          return MaterialPageRoute(
+            builder: (context) => DetailScreen(movieId: movieId),
+          );
+        }
+        return null;
+      },
     );
   }
 }
