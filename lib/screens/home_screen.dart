@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+
 import '../constants/app_colors.dart';
 import '../models/movie.dart';
 import '../routes/app_routes.dart';
@@ -16,6 +19,8 @@ class _HomeScreenState extends State<HomeScreen> {
   final TextEditingController _searchController = TextEditingController();
   final MovieService _movieService = MovieService();
   late Future<List<Movie>> _moviesFuture;
+  Timer? _debounce;
+  String _lastText = '';
 
   @override
   void initState() {
@@ -26,16 +31,31 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   void dispose() {
+    _debounce?.cancel();
     _searchController.dispose();
     super.dispose();
   }
 
   void _onSearchChanged() {
-    final query = _searchController.text.trim();
-    setState(() {
-      _moviesFuture = query.isEmpty
-          ? _movieService.getPopularMovies()
-          : _movieService.searchMovies(query);
+    final text = _searchController.text;
+    if (text == _lastText) return;
+    _lastText = text;
+    _debounce?.cancel();
+
+    final query = text.trim();
+    if (query.isEmpty) {
+      setState(() {
+        _moviesFuture = _movieService.getPopularMovies();
+      });
+      return;
+    }
+
+    setState(() {});
+    _debounce = Timer(const Duration(milliseconds: 500), () {
+      if (!mounted) return;
+      setState(() {
+        _moviesFuture = _movieService.searchMovies(query);
+      });
     });
   }
 
@@ -59,7 +79,7 @@ class _HomeScreenState extends State<HomeScreen> {
               hintStyle: const TextStyle(color: Colors.white54),
               prefixIcon: const Icon(Icons.search, color: kOrange),
               suffixIcon: _searchController.text.isEmpty
-                  ? null 
+                  ? null
                   : IconButton(
                       icon: const Icon(Icons.close, color: Colors.white54),
                       onPressed: _searchController.clear,
