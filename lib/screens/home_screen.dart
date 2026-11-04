@@ -59,7 +59,7 @@ class _HomeScreenState extends State<HomeScreen> {
               hintStyle: const TextStyle(color: Colors.white54),
               prefixIcon: const Icon(Icons.search, color: kOrange),
               suffixIcon: _searchController.text.isEmpty
-                  ? null
+                  ? null 
                   : IconButton(
                       icon: const Icon(Icons.close, color: Colors.white54),
                       onPressed: _searchController.clear,
