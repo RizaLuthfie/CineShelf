@@ -1,4 +1,6 @@
 class Movie {
+  static const String imageBaseUrl = 'https://image.tmdb.org/t/p/w500';
+
   final int id;
   final String title;
   final int year;
@@ -16,4 +18,23 @@ class Movie {
     required this.overview,
     required this.genres,
   });
+
+  factory Movie.fromJson(Map<String, dynamic> json) {
+    final String releaseDate = json['release_date'] ?? '';
+    final String? posterPath = json['poster_path'];
+    final List<dynamic> genreList = json['genres'] ?? [];
+    final num voteAverage = json['vote_average'] ?? 0;
+
+    return Movie(
+      id: json['id'],
+      title: json['title'] ?? '',
+      year: releaseDate.length >= 4
+          ? int.tryParse(releaseDate.substring(0, 4)) ?? 0
+          : 0,
+      rating: double.parse(voteAverage.toStringAsFixed(1)),
+      posterUrl: posterPath == null ? '' : '$imageBaseUrl$posterPath',
+      overview: json['overview'] ?? '',
+      genres: genreList.map((genre) => genre['name'] as String).toList(),
+    );
+  }
 }

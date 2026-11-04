@@ -46,3 +46,6 @@ app.*.map.json
 
 # Widget Preview related
 .widget_preview/
+
+# API config (token TMDB)
+lib/config/api_config.dart
