@@ -1,30 +1,50 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:cineshelf/main.dart';
+import 'package:cineshelf/models/movie.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  test('Movie.fromJson membaca data dari API detail', () {
+    final movie = Movie.fromJson({
+      'id': 27205,
+      'title': 'Inception',
+      'release_date': '2010-07-15',
+      'vote_average': 8.367,
+      'poster_path': '/abc.jpg',
+      'overview': 'Sinopsis',
+      'genres': [
+        {'id': 28, 'name': 'Action'},
+        {'id': 878, 'name': 'Science Fiction'},
+      ],
+    });
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    expect(movie.id, 27205);
+    expect(movie.title, 'Inception');
+    expect(movie.year, 2010);
+    expect(movie.rating, 8.4);
+    expect(movie.posterUrl, 'https://image.tmdb.org/t/p/w500/abc.jpg');
+    expect(movie.genres, ['Action', 'Science Fiction']);
+  });
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+  test('Movie.fromJson aman jika data dari API list tidak lengkap', () {
+    final movie = Movie.fromJson({
+      'id': 1,
+      'title': 'Tanpa Poster',
+      'release_date': '',
+      'vote_average': 0,
+      'poster_path': null,
+      'genre_ids': [28],
+    });
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    expect(movie.year, 0);
+    expect(movie.rating, 0.0);
+    expect(movie.posterUrl, '');
+    expect(movie.genres, isEmpty);
+  });
+
+  testWidgets('Home menampilkan search bar', (WidgetTester tester) async {
+    await tester.pumpWidget(const CineShelfApp());
+
+    expect(find.text('Cari film...'), findsOneWidget);
   });
 }
