@@ -14,17 +14,26 @@ Istilah "Favorit" sudah diganti jadi "Daftar Tonton"; fungsinya tetap sama.
 
 ## Struktur lib/
 constants/app_colors.dart (kNavy, kCard, kOrange)
-models/movie.dart (fromJson untuk API, toMap/fromMap untuk database), models/genre.dart (id, name, fromJson)
+models/movie.dart (fromJson untuk API, toMap/fromMap untuk database), models/genre.dart (id, name, fromJson),
+models/cast_member.dart (name, character, profileUrl, fromJson)
 routes/app_routes.dart
 screens/ main_screen, home_screen, detail_screen, watchlist_screen, about_screen
 services/ movie_service.dart, watchlist_service.dart (singleton, sqflite)
-widgets/ movie_card.dart, poster_image.dart
+widgets/ movie_card.dart, poster_image.dart, cast_card.dart
 
 ## Arsitektur
 - Layar tidak boleh memanggil http atau database langsung. Semua data lewat service.
 - MovieService punya 5 method: getPopularMovies({page = 1}), searchMovies(query, {page = 1}),
   getMovieDetail(id), getGenres(), getMoviesByGenre(genreId, {page = 1}). Semua mengembalikan
-  Future; page dikirim sebagai query parameter ke TMDB.
+  Future; page dikirim sebagai query parameter ke TMDB. getMovieDetail mengirim
+  append_to_response=credits.
+- Movie punya director (String, default '') dan cast (List<CastMember>, default const []).
+  fromJson membaca credits kalau ada: director = crew dengan job 'Director' (digabung koma),
+  cast = 10 pertama dari credits.cast. toMap/fromMap tidak menyimpan director dan cast.
+- Detail menampilkan "Sutradara: ..." di bawah rating (kalau tidak kosong) dan bagian "Pemeran"
+  setelah sinopsis (ListView horizontal tinggi 175, item CastCard lebar 90; disembunyikan kalau
+  cast kosong). Foto profil w185, placeholder ikon person. Nama karakter maksimal 2 baris
+  (ellipsis).
 - WatchlistService punya 4 method async: getWatchlist(), isInWatchlist(id), add(movie), remove(id).
 - Navigasi pakai named routes: home dan about di `routes`, detail di `onGenerateRoute` (arguments: int movieId).
 - Halaman About dibuka dari ikon info_outline di AppBar MainScreen.

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+
 import '../constants/app_colors.dart';
 import '../models/movie.dart';
 import '../services/movie_service.dart';
 import '../services/watchlist_service.dart';
+import '../widgets/cast_card.dart';
 import '../widgets/poster_image.dart';
 
 class DetailScreen extends StatefulWidget {
@@ -146,6 +148,13 @@ class _DetailScreenState extends State<DetailScreen> {
               ),
             ],
           ),
+          if (movie.director.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Text(
+              'Sutradara: ${movie.director}',
+              style: const TextStyle(color: Colors.white70),
+            ),
+          ],
           const SizedBox(height: 12),
           Wrap(
             spacing: 8,
@@ -175,6 +184,31 @@ class _DetailScreenState extends State<DetailScreen> {
             movie.overview,
             style: const TextStyle(color: Colors.white70, height: 1.5),
           ),
+          if (movie.cast.isNotEmpty) ...[
+            const SizedBox(height: 16),
+            const Text(
+              'Pemeran',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8),
+            SizedBox(
+              height: 175,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: movie.cast.length,
+                itemBuilder: (context, index) {
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: CastCard(member: movie.cast[index]),
+                  );
+                },
+              ),
+            ),
+          ],
           const SizedBox(height: 24),
           SizedBox(
             width: double.infinity,

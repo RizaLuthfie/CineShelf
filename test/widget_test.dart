@@ -44,6 +44,48 @@ void main() {
     expect(movie.genres, isEmpty);
   });
 
+  test('Movie.fromJson membaca sutradara dan pemeran dari credits', () {
+    final movie = Movie.fromJson({
+      'id': 27205,
+      'title': 'Inception',
+      'credits': {
+        'crew': [
+          {'name': 'Christopher Nolan', 'job': 'Director'},
+          {'name': 'Hans Zimmer', 'job': 'Original Music Composer'},
+          {'name': 'Emma Thomas', 'job': 'Director'},
+        ],
+        'cast': List.generate(
+          12,
+          (index) => {
+            'name': 'Aktor $index',
+            'character': 'Tokoh $index',
+            'profile_path': index == 0 ? '/foto.jpg' : null,
+          },
+        ),
+      },
+    });
+
+    expect(movie.director, 'Christopher Nolan, Emma Thomas');
+    expect(movie.cast.length, 10);
+    expect(movie.cast[0].name, 'Aktor 0');
+    expect(movie.cast[0].character, 'Tokoh 0');
+    expect(
+      movie.cast[0].profileUrl,
+      'https://image.tmdb.org/t/p/w185/foto.jpg',
+    );
+    expect(movie.cast[1].profileUrl, '');
+  });
+
+  test(
+    'Movie.fromJson tanpa credits menghasilkan sutradara dan pemeran kosong',
+    () {
+      final movie = Movie.fromJson({'id': 1, 'title': 'Dari List'});
+
+      expect(movie.director, '');
+      expect(movie.cast, isEmpty);
+    },
+  );
+
   test('Movie.toMap dan Movie.fromMap menghasilkan data yang sama', () {
     const movie = Movie(
       id: 27205,
@@ -101,6 +143,8 @@ void main() {
 
     expect(map['watched'], 1);
     expect(map.containsKey('added_at'), isFalse);
+    expect(map.containsKey('director'), isFalse);
+    expect(map.containsKey('cast'), isFalse);
     expect(Movie.fromMap(map).watched, isTrue);
     expect(Movie.fromMap({...map, 'watched': 0}).watched, isFalse);
   });

@@ -47,7 +47,7 @@ class MovieService {
   }
 
   Future<Movie> getMovieDetail(int id) async {
-    final data = await _get('/movie/$id');
+    final data = await _get('/movie/$id', {'append_to_response': 'credits'});
     return Movie.fromJson(data);
   }
 

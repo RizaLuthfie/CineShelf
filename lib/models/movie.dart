@@ -1,3 +1,5 @@
+import 'cast_member.dart';
+
 class Movie {
   static const String imageBaseUrl = 'https://image.tmdb.org/t/p/w500';
 
@@ -9,6 +11,8 @@ class Movie {
   final String overview;
   final List<String> genres;
   final bool watched;
+  final String director;
+  final List<CastMember> cast;
 
   const Movie({
     required this.id,
@@ -19,6 +23,8 @@ class Movie {
     required this.overview,
     required this.genres,
     this.watched = false,
+    this.director = '',
+    this.cast = const [],
   });
 
   factory Movie.fromJson(Map<String, dynamic> json) {
@@ -26,6 +32,9 @@ class Movie {
     final String? posterPath = json['poster_path'];
     final List<dynamic> genreList = json['genres'] ?? [];
     final num voteAverage = json['vote_average'] ?? 0;
+    final Map<String, dynamic> credits = json['credits'] ?? {};
+    final List<dynamic> crewList = credits['crew'] ?? [];
+    final List<dynamic> castList = credits['cast'] ?? [];
 
     return Movie(
       id: json['id'],
@@ -37,6 +46,14 @@ class Movie {
       posterUrl: posterPath == null ? '' : '$imageBaseUrl$posterPath',
       overview: json['overview'] ?? '',
       genres: genreList.map((genre) => genre['name'] as String).toList(),
+      director: crewList
+          .where((person) => person['job'] == 'Director')
+          .map((person) => person['name'] as String)
+          .join(', '),
+      cast: castList
+          .take(10)
+          .map((person) => CastMember.fromJson(person))
+          .toList(),
     );
   }
 
