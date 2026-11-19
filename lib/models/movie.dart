@@ -37,4 +37,30 @@ class Movie {
       genres: genreList.map((genre) => genre['name'] as String).toList(),
     );
   }
+
+  factory Movie.fromMap(Map<String, dynamic> map) {
+    final String genreText = map['genres'] ?? '';
+
+    return Movie(
+      id: map['id'],
+      title: map['title'] ?? '',
+      year: map['year'] ?? 0,
+      rating: (map['rating'] as num? ?? 0).toDouble(),
+      posterUrl: map['poster_url'] ?? '',
+      overview: map['overview'] ?? '',
+      genres: genreText.isEmpty ? [] : genreText.split(','),
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'title': title,
+      'year': year,
+      'rating': rating,
+      'poster_url': posterUrl,
+      'overview': overview,
+      'genres': genres.join(','),
+    };
+  }
 }

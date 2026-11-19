@@ -42,6 +42,46 @@ void main() {
     expect(movie.genres, isEmpty);
   });
 
+  test('Movie.toMap dan Movie.fromMap menghasilkan data yang sama', () {
+    const movie = Movie(
+      id: 27205,
+      title: 'Inception',
+      year: 2010,
+      rating: 8.4,
+      posterUrl: 'https://image.tmdb.org/t/p/w500/abc.jpg',
+      overview: 'Sinopsis',
+      genres: ['Action', 'Science Fiction'],
+    );
+
+    final map = movie.toMap();
+    final result = Movie.fromMap(map);
+
+    expect(map['genres'], 'Action,Science Fiction');
+    expect(map['poster_url'], movie.posterUrl);
+    expect(result.id, movie.id);
+    expect(result.title, movie.title);
+    expect(result.year, movie.year);
+    expect(result.rating, movie.rating);
+    expect(result.posterUrl, movie.posterUrl);
+    expect(result.overview, movie.overview);
+    expect(result.genres, movie.genres);
+  });
+
+  test('Movie.fromMap aman jika genre kosong', () {
+    final movie = Movie.fromMap({
+      'id': 1,
+      'title': 'Tanpa Genre',
+      'year': 2020,
+      'rating': 7,
+      'poster_url': '',
+      'overview': '',
+      'genres': '',
+    });
+
+    expect(movie.rating, 7.0);
+    expect(movie.genres, isEmpty);
+  });
+
   testWidgets('Home menampilkan search bar', (WidgetTester tester) async {
     await tester.pumpWidget(const CineShelfApp());
 

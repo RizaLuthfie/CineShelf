@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
-import 'favorite_screen.dart';
 import 'home_screen.dart';
+import 'watchlist_screen.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -27,7 +27,7 @@ class _MainScreenState extends State<MainScreen> {
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
       ),
-      body: _selectedIndex == 0 ? const HomeScreen() : const FavoriteScreen(),
+      body: _selectedIndex == 0 ? const HomeScreen() : const WatchlistScreen(),
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor: kCard,
         type: BottomNavigationBarType.fixed,
@@ -42,8 +42,8 @@ class _MainScreenState extends State<MainScreen> {
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(
-            icon: Icon(Icons.favorite),
-            label: 'Favorit',
+            icon: Icon(Icons.bookmark),
+            label: 'Daftar Tonton',
           ),
         ],
       ),

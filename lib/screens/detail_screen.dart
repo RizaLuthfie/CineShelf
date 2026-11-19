@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
 import '../models/movie.dart';
-import '../services/favorite_service.dart';
 import '../services/movie_service.dart';
+import '../services/watchlist_service.dart';
 import '../widgets/poster_image.dart';
 
 class DetailScreen extends StatefulWidget {
@@ -16,40 +16,42 @@ class DetailScreen extends StatefulWidget {
 
 class _DetailScreenState extends State<DetailScreen> {
   final MovieService _movieService = MovieService();
-  final FavoriteService _favoriteService = FavoriteService.instance;
+  final WatchlistService _watchlistService = WatchlistService.instance;
 
   late Future<Movie> _movieFuture;
-  bool _isFavorite = false;
+  bool _isInWatchlist = false;
 
   @override
   void initState() {
     super.initState();
     _movieFuture = _movieService.getMovieDetail(widget.movieId);
-    _loadFavoriteStatus();
+    _loadWatchlistStatus();
   }
 
-  Future<void> _loadFavoriteStatus() async {
-    final status = await _favoriteService.isFavorite(widget.movieId);
+  Future<void> _loadWatchlistStatus() async {
+    final status = await _watchlistService.isInWatchlist(widget.movieId);
     if (!mounted) return;
     setState(() {
-      _isFavorite = status;
+      _isInWatchlist = status;
     });
   }
 
-  Future<void> _toggleFavorite(Movie movie) async {
-    if (_isFavorite) {
-      await _favoriteService.remove(movie.id);
+  Future<void> _toggleWatchlist(Movie movie) async {
+    if (_isInWatchlist) {
+      await _watchlistService.remove(movie.id);
     } else {
-      await _favoriteService.add(movie);
+      await _watchlistService.add(movie);
     }
     if (!mounted) return;
     setState(() {
-      _isFavorite = !_isFavorite;
+      _isInWatchlist = !_isInWatchlist;
     });
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          _isFavorite ? 'Ditambahkan ke favorit' : 'Dihapus dari favorit',
+          _isInWatchlist
+              ? 'Ditambahkan ke daftar tonton'
+              : 'Dihapus dari daftar tonton',
         ),
         duration: const Duration(seconds: 1),
       ),
@@ -161,17 +163,19 @@ class _DetailScreenState extends State<DetailScreen> {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton.icon(
-              onPressed: () => _toggleFavorite(movie),
+              onPressed: () => _toggleWatchlist(movie),
               icon: Icon(
-                _isFavorite ? Icons.favorite : Icons.favorite_border,
+                _isInWatchlist ? Icons.bookmark : Icons.bookmark_border,
               ),
               label: Text(
-                _isFavorite ? 'Hapus dari Favorit' : 'Tambah ke Favorit',
+                _isInWatchlist
+                    ? 'Hapus dari Daftar Tonton'
+                    : 'Tambah ke Daftar Tonton',
               ),
               style: ElevatedButton.styleFrom(
-                backgroundColor: _isFavorite ? kCard : kOrange,
+                backgroundColor: _isInWatchlist ? kCard : kOrange,
                 foregroundColor: Colors.white,
-                side: _isFavorite ? const BorderSide(color: kOrange) : null,
+                side: _isInWatchlist ? const BorderSide(color: kOrange) : null,
                 padding: const EdgeInsets.symmetric(vertical: 14),
               ),
             ),
