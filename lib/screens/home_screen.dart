@@ -9,6 +9,8 @@ import '../routes/app_routes.dart';
 import '../services/movie_service.dart';
 import '../widgets/movie_card.dart';
 
+enum MovieCategory { popular, topRated, nowPlaying, genre }
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -33,6 +35,7 @@ class _HomeScreenState extends State<HomeScreen> {
   int _requestId = 0;
 
   List<Genre> _genres = [];
+  MovieCategory _category = MovieCategory.popular;
   int? _selectedGenreId;
 
   @override
@@ -73,19 +76,25 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _changeQuery(String query) {
-    if (query == _query && _selectedGenreId == null) return;
+    if (query == _query && _category == MovieCategory.popular) return;
     _query = query;
+    _category = MovieCategory.popular;
     _selectedGenreId = null;
     _loadFirstPage();
   }
 
-  void _selectGenre(int? genreId) {
+  void _selectChip(MovieCategory category, int? genreId) {
     FocusScope.of(context).unfocus();
-    if (genreId == _selectedGenreId && _searchController.text.isEmpty) return;
+    if (category == _category &&
+        genreId == _selectedGenreId &&
+        _searchController.text.isEmpty) {
+      return;
+    }
     _debounce?.cancel();
     _lastText = '';
     _searchController.clear();
     _query = '';
+    _category = category;
     _selectedGenreId = genreId;
     _loadFirstPage();
   }
@@ -120,11 +129,16 @@ class _HomeScreenState extends State<HomeScreen> {
     if (_query.isNotEmpty) {
       return _movieService.searchMovies(_query, page: page);
     }
-    final genreId = _selectedGenreId;
-    if (genreId != null) {
-      return _movieService.getMoviesByGenre(genreId, page: page);
+    switch (_category) {
+      case MovieCategory.topRated:
+        return _movieService.getTopRatedMovies(page: page);
+      case MovieCategory.nowPlaying:
+        return _movieService.getNowPlayingMovies(page: page);
+      case MovieCategory.genre:
+        return _movieService.getMoviesByGenre(_selectedGenreId!, page: page);
+      case MovieCategory.popular:
+        return _movieService.getPopularMovies(page: page);
     }
-    return _movieService.getPopularMovies(page: page);
   }
 
   void _addMovies(List<Movie> movies) {
@@ -225,39 +239,108 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
         ),
+        _buildCategoryChips(),
+        if (_shownCategory == MovieCategory.nowPlaying) _buildNowPlayingNote(),
         if (_genres.isNotEmpty) _buildGenreChips(),
         Expanded(child: _buildContent()),
       ],
     );
   }
 
+  MovieCategory get _shownCategory {
+    if (_searchController.text.isNotEmpty) return MovieCategory.popular;
+    return _category;
+  }
+
+  Widget _buildCategoryChips() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 2),
+      child: Row(
+        children: [
+          _buildCategoryChip('Populer', MovieCategory.popular),
+          const SizedBox(width: 8),
+          _buildCategoryChip('Rating Tertinggi', MovieCategory.topRated),
+          const SizedBox(width: 8),
+          _buildCategoryChip('Sedang Tayang', MovieCategory.nowPlaying),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCategoryChip(String label, MovieCategory category) {
+    return Expanded(
+      child: ChoiceChip(
+        label: SizedBox(
+          width: double.infinity,
+          child: FittedBox(fit: BoxFit.scaleDown, child: Text(label)),
+        ),
+        selected: _shownCategory == category,
+        onSelected: (_) => _selectChip(category, null),
+        showCheckmark: false,
+        selectedColor: kOrange,
+        backgroundColor: kCard,
+        side: BorderSide.none,
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+        labelPadding: EdgeInsets.zero,
+        labelStyle: const TextStyle(color: Colors.white, fontSize: 13),
+      ),
+    );
+  }
+
+  Widget _buildNowPlayingNote() {
+    return const Padding(
+      padding: EdgeInsets.fromLTRB(16, 0, 16, 4),
+      child: Row(
+        children: [
+          Icon(Icons.info_outline, size: 14, color: Colors.white38),
+          SizedBox(width: 6),
+          Expanded(
+            child: Text(
+              'Data TMDB (Indonesia), bisa beda dengan jadwal bioskop',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(color: Colors.white38, fontSize: 11),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildGenreChips() {
-    final selectedId = _searchController.text.isEmpty ? _selectedGenreId : null;
+    final category = _shownCategory;
     return SizedBox(
       height: 48,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 16),
-        itemCount: _genres.length + 1,
+        itemCount: _genres.length,
         itemBuilder: (context, index) {
-          if (index == 0) {
-            return _buildChip('Semua', null, selectedId == null);
-          }
-          final genre = _genres[index - 1];
-          return _buildChip(genre.name, genre.id, selectedId == genre.id);
+          final genre = _genres[index];
+          return _buildChip(
+            genre.name,
+            MovieCategory.genre,
+            genre.id,
+            category == MovieCategory.genre && _selectedGenreId == genre.id,
+          );
         },
       ),
     );
   }
 
-  Widget _buildChip(String label, int? genreId, bool selected) {
+  Widget _buildChip(
+    String label,
+    MovieCategory category,
+    int? genreId,
+    bool selected,
+  ) {
     return Padding(
       padding: const EdgeInsets.only(right: 8),
       child: Center(
         child: ChoiceChip(
           label: Text(label),
           selected: selected,
-          onSelected: (_) => _selectGenre(genreId),
+          onSelected: (_) => _selectChip(category, genreId),
           showCheckmark: false,
           selectedColor: kOrange,
           backgroundColor: kCard,

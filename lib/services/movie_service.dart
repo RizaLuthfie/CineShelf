@@ -41,6 +41,32 @@ class MovieService {
     return _parseList(data);
   }
 
+  Future<List<Movie>> getTopRatedMovies({int page = 1}) async {
+    final data = await _get('/movie/top_rated', {'page': '$page'});
+    return _parseList(data);
+  }
+
+  Future<List<Movie>> getNowPlayingMovies({int page = 1}) async {
+    final today = DateTime.now();
+    final start = today.subtract(const Duration(days: 30));
+    final data = await _get('/discover/movie', {
+      'region': 'ID',
+      'with_release_type': '2|3',
+      'release_date.gte': _formatDate(start),
+      'release_date.lte': _formatDate(today),
+      'sort_by': 'popularity.desc',
+      'include_adult': 'false',
+      'page': '$page',
+    });
+    return _parseList(data);
+  }
+
+  String _formatDate(DateTime date) {
+    final month = date.month.toString().padLeft(2, '0');
+    final day = date.day.toString().padLeft(2, '0');
+    return '${date.year}-$month-$day';
+  }
+
   Future<List<Movie>> searchMovies(String query, {int page = 1}) async {
     final data = await _get('/search/movie', {'query': query, 'page': '$page'});
     return _parseList(data);
