@@ -22,12 +22,17 @@ widgets/ movie_card.dart, poster_image.dart
 
 ## Arsitektur
 - Layar tidak boleh memanggil http atau database langsung. Semua data lewat service.
-- MovieService punya 3 method: getPopularMovies(), searchMovies(query), getMovieDetail(id).
-  Signature jangan berubah supaya layar tidak perlu diedit.
+- MovieService punya 3 method: getPopularMovies({page = 1}), searchMovies(query, {page = 1}),
+  getMovieDetail(id). Semua mengembalikan Future; page dikirim sebagai query parameter ke TMDB.
 - WatchlistService punya 4 method async: getWatchlist(), isInWatchlist(id), add(movie), remove(id).
 - Navigasi pakai named routes: home dan about di `routes`, detail di `onGenerateRoute` (arguments: int movieId).
 - Halaman About dibuka dari ikon info_outline di AppBar MainScreen.
-- Async pakai FutureBuilder (loading, error + tombol coba lagi, kosong, data).
+- Detail dan Daftar Tonton pakai FutureBuilder (loading, error + tombol coba lagi, kosong, data).
+- Home pakai state manual untuk scroll tak terbatas: _movies, _page, _isLoading, _isLoadingMore,
+  _hasMore, _hasError, _query, dan _requestId (hasil request lama diabaikan). ScrollController
+  memuat halaman berikutnya saat dekat ujung bawah (200 px). Film dengan id sama dilewati.
+  Gagal muat halaman berikutnya cukup SnackBar, daftar tidak dihapus. Ganti query = reset ke
+  halaman 1 dan scroll ke atas. Debounce pencarian 500 ms.
 - Selalu cek `if (!mounted) return;` setelah await sebelum setState atau context.
 
 ## Data

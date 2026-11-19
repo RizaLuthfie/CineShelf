@@ -35,13 +35,13 @@ class MovieService {
     return results.map((item) => Movie.fromJson(item)).toList();
   }
 
-  Future<List<Movie>> getPopularMovies() async {
-    final data = await _get('/movie/popular');
+  Future<List<Movie>> getPopularMovies({int page = 1}) async {
+    final data = await _get('/movie/popular', {'page': '$page'});
     return _parseList(data);
   }
 
-  Future<List<Movie>> searchMovies(String query) async {
-    final data = await _get('/search/movie', {'query': query});
+  Future<List<Movie>> searchMovies(String query, {int page = 1}) async {
+    final data = await _get('/search/movie', {'query': query, 'page': '$page'});
     return _parseList(data);
   }
 
