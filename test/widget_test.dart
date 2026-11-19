@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:cineshelf/main.dart';
+import 'package:cineshelf/models/genre.dart';
 import 'package:cineshelf/models/movie.dart';
 
 void main() {
@@ -102,6 +103,13 @@ void main() {
     expect(map.containsKey('added_at'), isFalse);
     expect(Movie.fromMap(map).watched, isTrue);
     expect(Movie.fromMap({...map, 'watched': 0}).watched, isFalse);
+  });
+
+  test('Genre.fromJson membaca id dan nama', () {
+    final genre = Genre.fromJson({'id': 28, 'name': 'Action'});
+
+    expect(genre.id, 28);
+    expect(genre.name, 'Action');
   });
 
   testWidgets('Home menampilkan search bar', (WidgetTester tester) async {

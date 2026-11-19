@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 import '../config/api_config.dart';
+import '../models/genre.dart';
 import '../models/movie.dart';
 
 class MovieService {
@@ -48,5 +49,19 @@ class MovieService {
   Future<Movie> getMovieDetail(int id) async {
     final data = await _get('/movie/$id');
     return Movie.fromJson(data);
+  }
+
+  Future<List<Genre>> getGenres() async {
+    final data = await _get('/genre/movie/list');
+    final List<dynamic> genres = data['genres'] ?? [];
+    return genres.map((item) => Genre.fromJson(item)).toList();
+  }
+
+  Future<List<Movie>> getMoviesByGenre(int genreId, {int page = 1}) async {
+    final data = await _get('/discover/movie', {
+      'with_genres': '$genreId',
+      'page': '$page',
+    });
+    return _parseList(data);
   }
 }

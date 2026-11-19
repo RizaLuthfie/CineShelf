@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../constants/app_colors.dart';
+import '../models/genre.dart';
 import '../models/movie.dart';
 import '../routes/app_routes.dart';
 import '../services/movie_service.dart';
@@ -31,11 +32,15 @@ class _HomeScreenState extends State<HomeScreen> {
   String _query = '';
   int _requestId = 0;
 
+  List<Genre> _genres = [];
+  int? _selectedGenreId;
+
   @override
   void initState() {
     super.initState();
     _searchController.addListener(_onSearchChanged);
     _scrollController.addListener(_onScroll);
+    _loadGenres();
     _loadFirstPage();
   }
 
@@ -68,9 +73,40 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _changeQuery(String query) {
-    if (query == _query) return;
+    if (query == _query && _selectedGenreId == null) return;
     _query = query;
+    _selectedGenreId = null;
     _loadFirstPage();
+  }
+
+  void _selectGenre(int? genreId) {
+    FocusScope.of(context).unfocus();
+    if (genreId == _selectedGenreId && _searchController.text.isEmpty) return;
+    _debounce?.cancel();
+    _lastText = '';
+    _searchController.clear();
+    _query = '';
+    _selectedGenreId = genreId;
+    _loadFirstPage();
+  }
+
+  void _retry() {
+    if (_genres.isEmpty) {
+      _loadGenres();
+    }
+    _loadFirstPage();
+  }
+
+  Future<void> _loadGenres() async {
+    try {
+      final genres = await _movieService.getGenres();
+      if (!mounted) return;
+      setState(() {
+        _genres = genres;
+      });
+    } catch (e) {
+      return;
+    }
   }
 
   void _onScroll() {
@@ -81,10 +117,14 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<List<Movie>> _fetch(int page) {
-    if (_query.isEmpty) {
-      return _movieService.getPopularMovies(page: page);
+    if (_query.isNotEmpty) {
+      return _movieService.searchMovies(_query, page: page);
     }
-    return _movieService.searchMovies(_query, page: page);
+    final genreId = _selectedGenreId;
+    if (genreId != null) {
+      return _movieService.getMoviesByGenre(genreId, page: page);
+    }
+    return _movieService.getPopularMovies(page: page);
   }
 
   void _addMovies(List<Movie> movies) {
@@ -185,8 +225,46 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
         ),
+        if (_genres.isNotEmpty) _buildGenreChips(),
         Expanded(child: _buildContent()),
       ],
+    );
+  }
+
+  Widget _buildGenreChips() {
+    final selectedId = _searchController.text.isEmpty ? _selectedGenreId : null;
+    return SizedBox(
+      height: 48,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        itemCount: _genres.length + 1,
+        itemBuilder: (context, index) {
+          if (index == 0) {
+            return _buildChip('Semua', null, selectedId == null);
+          }
+          final genre = _genres[index - 1];
+          return _buildChip(genre.name, genre.id, selectedId == genre.id);
+        },
+      ),
+    );
+  }
+
+  Widget _buildChip(String label, int? genreId, bool selected) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 8),
+      child: Center(
+        child: ChoiceChip(
+          label: Text(label),
+          selected: selected,
+          onSelected: (_) => _selectGenre(genreId),
+          showCheckmark: false,
+          selectedColor: kOrange,
+          backgroundColor: kCard,
+          side: BorderSide.none,
+          labelStyle: const TextStyle(color: Colors.white),
+        ),
+      ),
     );
   }
 
@@ -247,10 +325,7 @@ class _HomeScreenState extends State<HomeScreen> {
             style: TextStyle(color: Colors.white54),
           ),
           const SizedBox(height: 12),
-          ElevatedButton(
-            onPressed: _loadFirstPage,
-            child: const Text('Coba lagi'),
-          ),
+          ElevatedButton(onPressed: _retry, child: const Text('Coba lagi')),
         ],
       ),
     );
