@@ -57,12 +57,24 @@ class WatchlistService {
 
   Future<void> add(Movie movie) async {
     final db = await _getDatabase();
-    final row = movie.toMap();
-    row['added_at'] = DateTime.now().toIso8601String();
+    final row = {
+      ...movie.toMap(),
+      'added_at': DateTime.now().toIso8601String(),
+    };
     await db.insert(
       _tableName,
       row,
       conflictAlgorithm: ConflictAlgorithm.ignore,
+    );
+  }
+
+  Future<void> setWatched(int movieId, bool watched) async {
+    final db = await _getDatabase();
+    await db.update(
+      _tableName,
+      {'watched': watched ? 1 : 0},
+      where: 'id = ?',
+      whereArgs: [movieId],
     );
   }
 

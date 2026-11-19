@@ -80,6 +80,27 @@ void main() {
 
     expect(movie.rating, 7.0);
     expect(movie.genres, isEmpty);
+    expect(movie.watched, isFalse);
+  });
+
+  test('Movie.toMap dan Movie.fromMap menyimpan status watched', () {
+    const movie = Movie(
+      id: 2,
+      title: 'Sudah Ditonton',
+      year: 2021,
+      rating: 8.0,
+      posterUrl: '',
+      overview: '',
+      genres: [],
+      watched: true,
+    );
+
+    final map = movie.toMap();
+
+    expect(map['watched'], 1);
+    expect(map.containsKey('added_at'), isFalse);
+    expect(Movie.fromMap(map).watched, isTrue);
+    expect(Movie.fromMap({...map, 'watched': 0}).watched, isFalse);
   });
 
   testWidgets('Home menampilkan search bar', (WidgetTester tester) async {

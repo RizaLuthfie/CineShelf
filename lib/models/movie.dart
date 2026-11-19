@@ -8,6 +8,7 @@ class Movie {
   final String posterUrl;
   final String overview;
   final List<String> genres;
+  final bool watched;
 
   const Movie({
     required this.id,
@@ -17,6 +18,7 @@ class Movie {
     required this.posterUrl,
     required this.overview,
     required this.genres,
+    this.watched = false,
   });
 
   factory Movie.fromJson(Map<String, dynamic> json) {
@@ -49,6 +51,7 @@ class Movie {
       posterUrl: map['poster_url'] ?? '',
       overview: map['overview'] ?? '',
       genres: genreText.isEmpty ? [] : genreText.split(','),
+      watched: map['watched'] == 1,
     );
   }
 
@@ -61,6 +64,7 @@ class Movie {
       'poster_url': posterUrl,
       'overview': overview,
       'genres': genres.join(','),
+      'watched': watched ? 1 : 0,
     };
   }
 }

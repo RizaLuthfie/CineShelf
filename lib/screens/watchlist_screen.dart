@@ -37,6 +37,12 @@ class _WatchlistScreenState extends State<WatchlistScreen> {
     );
   }
 
+  Future<void> _toggleWatched(Movie movie) async {
+    await _watchlistService.setWatched(movie.id, !movie.watched);
+    if (!mounted) return;
+    _reload();
+  }
+
   Future<void> _openDetail(Movie movie) async {
     await Navigator.pushNamed(
       context,
@@ -96,17 +102,46 @@ class _WatchlistScreenState extends State<WatchlistScreen> {
           itemCount: watchlist.length,
           itemBuilder: (context, index) {
             final movie = watchlist[index];
-            return MovieCard(
-              movie: movie,
-              onTap: () => _openDetail(movie),
-              trailing: IconButton(
-                icon: const Icon(Icons.delete_outline, color: Colors.white54),
-                onPressed: () => _removeFromWatchlist(movie),
+            return Opacity(
+              opacity: movie.watched ? 0.6 : 1,
+              child: MovieCard(
+                movie: movie,
+                onTap: () => _openDetail(movie),
+                trailing: _buildActions(movie),
               ),
             );
           },
         );
       },
+    );
+  }
+
+  Widget _buildActions(Movie movie) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            IconButton(
+              icon: Icon(
+                movie.watched ? Icons.check_circle : Icons.check_circle_outline,
+                color: movie.watched ? kOrange : Colors.white54,
+              ),
+              onPressed: () => _toggleWatched(movie),
+            ),
+            IconButton(
+              icon: const Icon(Icons.delete_outline, color: Colors.white54),
+              onPressed: () => _removeFromWatchlist(movie),
+            ),
+          ],
+        ),
+        if (movie.watched)
+          const Text(
+            'Sudah ditonton',
+            style: TextStyle(color: kOrange, fontSize: 12),
+          ),
+      ],
     );
   }
 }

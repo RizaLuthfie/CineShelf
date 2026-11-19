@@ -29,32 +29,48 @@ class _DetailScreenState extends State<DetailScreen> {
   }
 
   Future<void> _loadWatchlistStatus() async {
-    final status = await _watchlistService.isInWatchlist(widget.movieId);
-    if (!mounted) return;
-    setState(() {
-      _isInWatchlist = status;
-    });
+    try {
+      final status = await _watchlistService.isInWatchlist(widget.movieId);
+      if (!mounted) return;
+      setState(() {
+        _isInWatchlist = status;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      _showError();
+    }
   }
 
   Future<void> _toggleWatchlist(Movie movie) async {
-    if (_isInWatchlist) {
-      await _watchlistService.remove(movie.id);
-    } else {
-      await _watchlistService.add(movie);
-    }
-    if (!mounted) return;
-    setState(() {
-      _isInWatchlist = !_isInWatchlist;
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          _isInWatchlist
-              ? 'Ditambahkan ke daftar tonton'
-              : 'Dihapus dari daftar tonton',
+    try {
+      if (_isInWatchlist) {
+        await _watchlistService.remove(movie.id);
+      } else {
+        await _watchlistService.add(movie);
+      }
+      if (!mounted) return;
+      setState(() {
+        _isInWatchlist = !_isInWatchlist;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            _isInWatchlist
+                ? 'Ditambahkan ke daftar tonton'
+                : 'Dihapus dari daftar tonton',
+          ),
+          duration: const Duration(seconds: 1),
         ),
-        duration: const Duration(seconds: 1),
-      ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      _showError();
+    }
+  }
+
+  void _showError() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Gagal memperbarui daftar tonton')),
     );
   }
 
