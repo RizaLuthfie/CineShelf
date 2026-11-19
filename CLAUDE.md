@@ -16,7 +16,7 @@ Istilah "Favorit" sudah diganti jadi "Daftar Tonton"; fungsinya tetap sama.
 constants/app_colors.dart (kNavy, kCard, kOrange)
 models/movie.dart (fromJson untuk API, toMap/fromMap untuk database)
 routes/app_routes.dart
-screens/ main_screen, home_screen, detail_screen, watchlist_screen
+screens/ main_screen, home_screen, detail_screen, watchlist_screen, about_screen
 services/ movie_service.dart, watchlist_service.dart (singleton, sqflite)
 widgets/ movie_card.dart, poster_image.dart
 
@@ -25,7 +25,8 @@ widgets/ movie_card.dart, poster_image.dart
 - MovieService punya 3 method: getPopularMovies(), searchMovies(query), getMovieDetail(id).
   Signature jangan berubah supaya layar tidak perlu diedit.
 - WatchlistService punya 4 method async: getWatchlist(), isInWatchlist(id), add(movie), remove(id).
-- Navigasi pakai named routes: home di `routes`, detail di `onGenerateRoute` (arguments: int movieId).
+- Navigasi pakai named routes: home dan about di `routes`, detail di `onGenerateRoute` (arguments: int movieId).
+- Halaman About dibuka dari ikon info_outline di AppBar MainScreen.
 - Async pakai FutureBuilder (loading, error + tombol coba lagi, kosong, data).
 - Selalu cek `if (!mounted) return;` setelah await sebelum setState atau context.
 
@@ -37,6 +38,13 @@ widgets/ movie_card.dart, poster_image.dart
 - Tabel watchlist: id INTEGER PRIMARY KEY (id TMDB), title TEXT, year INTEGER, rating REAL,
   poster_url TEXT, overview TEXT, genres TEXT (dipisah koma), watched INTEGER DEFAULT 0,
   added_at TEXT (ISO 8601). Urutan tampil: added_at terbaru dulu.
+- Kolom watched dipakai untuk status "Sudah ditonton" (setWatched di WatchlistService).
+
+## Asset dan atribusi TMDB
+- Asset didaftarkan per folder di pubspec.yaml: assets/icon/ (logo.png) dan assets/images/ (tmdb_logo.svg).
+- Logo TMDB pakai flutter_svg (SvgPicture.asset), lebih kecil dari logo CineShelf, warna dan rasio tidak diubah.
+- Teks atribusi wajib persis: "This product uses the TMDB API but is not endorsed or certified by TMDB."
+- Jangan jalankan dart format pada seluruh folder (bisa menyentuh api_config.dart); format per file saja.
 
 ## Gaya kode
 - Tanpa komentar. Kode bersih dan sederhana karena akan dijelaskan ke dosen.

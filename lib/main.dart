@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'constants/app_colors.dart';
 import 'routes/app_routes.dart';
+import 'screens/about_screen.dart';
 import 'screens/detail_screen.dart';
 import 'screens/main_screen.dart';
 
@@ -24,6 +25,7 @@ class CineShelfApp extends StatelessWidget {
       initialRoute: AppRoutes.home,
       routes: {
         AppRoutes.home: (context) => const MainScreen(),
+        AppRoutes.about: (context) => const AboutScreen(),
       },
       onGenerateRoute: (settings) {
         if (settings.name == AppRoutes.detail) {

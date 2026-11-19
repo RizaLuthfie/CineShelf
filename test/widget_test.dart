@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:cineshelf/main.dart';
@@ -107,5 +108,26 @@ void main() {
     await tester.pumpWidget(const CineShelfApp());
 
     expect(find.text('Cari film...'), findsOneWidget);
+  });
+
+  testWidgets('Ikon info membuka halaman About dengan atribusi TMDB', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(const CineShelfApp());
+
+    await tester.tap(find.byIcon(Icons.info_outline));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Versi 1.0.0'), findsOneWidget);
+    expect(
+      find.text(
+        'This product uses the TMDB API but is not endorsed or certified by TMDB.',
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.text('Data film dan poster disediakan oleh TMDB.'),
+      findsOneWidget,
+    );
   });
 }

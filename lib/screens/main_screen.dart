@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
+import '../routes/app_routes.dart';
 import 'home_screen.dart';
 import 'watchlist_screen.dart';
 
@@ -26,6 +27,12 @@ class _MainScreenState extends State<MainScreen> {
           'CineShelf',
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.info_outline, color: Colors.white),
+            onPressed: () => Navigator.pushNamed(context, AppRoutes.about),
+          ),
+        ],
       ),
       body: _selectedIndex == 0 ? const HomeScreen() : const WatchlistScreen(),
       bottomNavigationBar: BottomNavigationBar(
