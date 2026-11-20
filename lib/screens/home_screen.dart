@@ -341,8 +341,8 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  MovieCategory get _shownCategory {
-    if (_searchController.text.isNotEmpty) return MovieCategory.popular;
+  MovieCategory? get _shownCategory {
+    if (_searchController.text.trim().isNotEmpty) return null;
     return _category;
   }
 

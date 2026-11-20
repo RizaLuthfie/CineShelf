@@ -71,8 +71,10 @@ widgets/ movie_card.dart, poster_image.dart, cast_card.dart
   searchMovies, selain itu ikut _category: popular -> getPopularMovies, topRated ->
   getTopRatedMovies, nowPlaying -> getNowPlayingMovies, genre -> getMoviesByGenre.
 - Chip vs search (_selectChip): pilih chip = kosongkan search (set _lastText dulu, batalkan
-  debounce) lalu muat halaman 1 sumber itu. Mengetik = chip "Populer" langsung tampil terpilih,
-  _category di-reset ke popular saat pencarian jalan (setelah debounce). Hapus teks = Populer.
+  debounce) lalu muat halaman 1 sumber itu. Saat ada teks di kolom search (setelah trim), semua
+  chip kategori dan genre tampil tidak aktif; _category di-reset ke popular saat pencarian jalan
+  (setelah debounce). Setelah teks dikosongkan atau tombol X ditekan, daftar kembali ke Populer
+  dan chip Populer aktif.
   "Coba lagi" memuat ulang sumber aktif.
 - Film Acak di Home: tombol InkWell 48x48 berisi Column (ikon Icons.casino_outlined + teks "Acak"
   fontSize 11 white70), tooltip dan Semantics label "Film acak", di kanan search bar dalam satu Row (HomeScreen tidak punya Scaffold sendiri, jadi bukan FAB; tidak menutupi daftar
