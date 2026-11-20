@@ -113,5 +113,13 @@ widgets/ movie_card.dart, poster_image.dart, cast_card.dart
 - Simpan di lib/config/api_config.dart dan tambahkan ke .gitignore.
 - Jangan tampilkan atau commit token di chat, log, atau pesan commit.
 
+## Signing release Android
+- android/app/build.gradle.kts membaca android/key.properties (storePassword, keyPassword, keyAlias,
+  storeFile) kalau file itu ada, lalu membuat signingConfigs "release" dan memakainya di buildTypes.release.
+- storeFile dibaca relatif terhadap folder android/app (atau pakai path absolut).
+- Kalau key.properties tidak ada, build release fallback ke kunci debug dan mencetak
+  "key.properties tidak ditemukan, build release memakai kunci debug". flutter run (debug) tetap jalan.
+- key.properties, *.jks, dan *.keystore ada di .gitignore. Jangan baca, tampilkan, atau commit isinya.
+
 ## Rencana berikutnya
 - Publikasi (minggu 15-16).
