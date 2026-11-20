@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../constants/app_colors.dart';
 import '../models/movie.dart';
 import '../routes/app_routes.dart';
@@ -14,103 +15,166 @@ class WatchlistScreen extends StatefulWidget {
 
 class _WatchlistScreenState extends State<WatchlistScreen> {
   final WatchlistService _watchlistService = WatchlistService.instance;
-  late Future<List<Movie>> _watchlistFuture;
+  List<Movie> _movies = [];
+  bool _isLoading = true;
+  bool _hasError = false;
 
   @override
   void initState() {
     super.initState();
-    _watchlistFuture = _watchlistService.getWatchlist();
+    _loadWatchlist();
   }
 
-  void _reload() {
+  Future<void> _loadWatchlist() async {
+    try {
+      final movies = await _watchlistService.getWatchlist();
+      if (!mounted) return;
+      setState(() {
+        _movies = movies;
+        _isLoading = false;
+        _hasError = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+        _hasError = true;
+      });
+    }
+  }
+
+  void _retry() {
     setState(() {
-      _watchlistFuture = _watchlistService.getWatchlist();
+      _isLoading = true;
+      _hasError = false;
     });
+    _loadWatchlist();
   }
 
-  Future<void> _removeFromWatchlist(Movie movie) async {
-    await _watchlistService.remove(movie.id);
-    if (!mounted) return;
-    _reload();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('${movie.title} dihapus dari daftar tonton')),
+  Movie _withWatched(Movie movie, bool watched) {
+    return Movie(
+      id: movie.id,
+      title: movie.title,
+      year: movie.year,
+      rating: movie.rating,
+      posterUrl: movie.posterUrl,
+      overview: movie.overview,
+      genres: movie.genres,
+      watched: watched,
     );
+  }
+
+  void _showMessage(String message) {
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
   }
 
   Future<void> _toggleWatched(Movie movie) async {
-    await _watchlistService.setWatched(movie.id, !movie.watched);
-    if (!mounted) return;
-    _reload();
+    final index = _movies.indexWhere((item) => item.id == movie.id);
+    if (index == -1) return;
+    final updated = _withWatched(movie, !movie.watched);
+    setState(() {
+      _movies[index] = updated;
+    });
+    try {
+      await _watchlistService.setWatched(movie.id, updated.watched);
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        final currentIndex = _movies.indexWhere((item) => item.id == movie.id);
+        if (currentIndex != -1) {
+          _movies[currentIndex] = movie;
+        }
+      });
+      _showMessage('Gagal memperbarui daftar tonton');
+    }
+  }
+
+  Future<void> _removeFromWatchlist(Movie movie) async {
+    final index = _movies.indexWhere((item) => item.id == movie.id);
+    if (index == -1) return;
+    setState(() {
+      _movies.removeAt(index);
+    });
+    try {
+      await _watchlistService.remove(movie.id);
+      if (!mounted) return;
+      _showMessage('${movie.title} dihapus dari daftar tonton');
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        final position = index > _movies.length ? _movies.length : index;
+        _movies.insert(position, movie);
+      });
+      _showMessage('Gagal memperbarui daftar tonton');
+    }
   }
 
   Future<void> _openDetail(Movie movie) async {
-    await Navigator.pushNamed(
-      context,
-      AppRoutes.detail,
-      arguments: movie.id,
-    );
+    await Navigator.pushNamed(context, AppRoutes.detail, arguments: movie.id);
     if (!mounted) return;
-    _reload();
+    try {
+      final movies = await _watchlistService.getWatchlist();
+      if (!mounted) return;
+      setState(() {
+        _movies = movies;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      _showMessage('Gagal memperbarui daftar tonton');
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<List<Movie>>(
-      future: _watchlistFuture,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        if (snapshot.hasError) {
-          return Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.error_outline, color: kOrange, size: 48),
-                const SizedBox(height: 8),
-                const Text(
-                  'Gagal memuat daftar tonton',
-                  style: TextStyle(color: Colors.white54),
-                ),
-                const SizedBox(height: 12),
-                ElevatedButton(
-                  onPressed: _reload,
-                  child: const Text('Coba lagi'),
-                ),
-              ],
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    if (_hasError) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.error_outline, color: kOrange, size: 48),
+            const SizedBox(height: 8),
+            const Text(
+              'Gagal memuat daftar tonton',
+              style: TextStyle(color: Colors.white54),
             ),
-          );
-        }
-        final watchlist = snapshot.data ?? [];
-        if (watchlist.isEmpty) {
-          return const Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.bookmark_border, color: kOrange, size: 64),
-                SizedBox(height: 12),
-                Text(
-                  'Daftar tontonmu masih kosong',
-                  style: TextStyle(color: Colors.white54),
-                ),
-              ],
+            const SizedBox(height: 12),
+            ElevatedButton(onPressed: _retry, child: const Text('Coba lagi')),
+          ],
+        ),
+      );
+    }
+    if (_movies.isEmpty) {
+      return const Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.bookmark_border, color: kOrange, size: 64),
+            SizedBox(height: 12),
+            Text(
+              'Daftar tontonmu masih kosong',
+              style: TextStyle(color: Colors.white54),
             ),
-          );
-        }
-        return ListView.builder(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          itemCount: watchlist.length,
-          itemBuilder: (context, index) {
-            final movie = watchlist[index];
-            return Opacity(
-              opacity: movie.watched ? 0.6 : 1,
-              child: MovieCard(
-                movie: movie,
-                onTap: () => _openDetail(movie),
-                trailing: _buildActions(movie),
-              ),
-            );
-          },
+          ],
+        ),
+      );
+    }
+    return ListView.builder(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      itemCount: _movies.length,
+      itemBuilder: (context, index) {
+        final movie = _movies[index];
+        return Opacity(
+          key: ValueKey(movie.id),
+          opacity: movie.watched ? 0.6 : 1,
+          child: MovieCard(
+            movie: movie,
+            onTap: () => _openDetail(movie),
+            trailing: _buildActions(movie),
+          ),
         );
       },
     );

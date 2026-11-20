@@ -47,7 +47,13 @@ widgets/ movie_card.dart, poster_image.dart, cast_card.dart
 - WatchlistService punya 4 method async: getWatchlist(), isInWatchlist(id), add(movie), remove(id).
 - Navigasi pakai named routes: home dan about di `routes`, detail di `onGenerateRoute` (arguments: int movieId).
 - Halaman About dibuka dari ikon info_outline di AppBar MainScreen.
-- Detail dan Daftar Tonton pakai FutureBuilder (loading, error + tombol coba lagi, kosong, data).
+- Detail pakai FutureBuilder (loading, error + tombol coba lagi, kosong, data).
+- Daftar Tonton pakai state lokal: _movies (List<Movie>), _isLoading, _hasError. Database dimuat
+  sekali di initState (loading hanya saat itu atau "Coba lagi"). Centang = ganti film di _movies
+  (salinan dengan watched dibalik, lewat _withWatched) lalu setWatched; hapus = removeAt lalu
+  remove. Gagal tulis = kembalikan perubahan lokal + SnackBar "Gagal memperbarui daftar tonton".
+  Kembali dari Detail = muat ulang diam-diam (tanpa indikator). Kartu pakai key ValueKey(movie.id)
+  agar scroll dan gambar tidak ter-reset.
 - Home pakai state manual untuk scroll tak terbatas: _movies, _page, _isLoading, _isLoadingMore,
   _hasMore, _hasError, _query, dan _requestId (hasil request lama diabaikan). ScrollController
   memuat halaman berikutnya saat dekat ujung bawah (200 px). Film dengan id sama dilewati.
