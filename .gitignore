@@ -49,3 +49,9 @@ app.*.map.json
 
 # API config (token TMDB)
 lib/config/api_config.dart
+
+# Android signing
+key.properties
+**/key.properties
+*.jks
+*.keystore
