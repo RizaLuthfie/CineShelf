@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 
@@ -37,6 +38,9 @@ class _HomeScreenState extends State<HomeScreen> {
   List<Genre> _genres = [];
   MovieCategory _category = MovieCategory.popular;
   int? _selectedGenreId;
+
+  final Random _random = Random();
+  bool _isLoadingRandom = false;
 
   @override
   void initState() {
@@ -203,11 +207,42 @@ class _HomeScreenState extends State<HomeScreen> {
       setState(() {
         _isLoadingMore = false;
       });
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(
-          const SnackBar(content: Text('Gagal memuat film berikutnya')),
-        );
+      _showMessage('Gagal memuat film berikutnya');
+    }
+  }
+
+  void _showMessage(String message) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  Future<void> _openRandomMovie() async {
+    if (_isLoadingRandom) return;
+    FocusScope.of(context).unfocus();
+    setState(() {
+      _isLoadingRandom = true;
+    });
+
+    try {
+      final page = _random.nextInt(5) + 1;
+      final movies = await _movieService.getPopularMovies(page: page);
+      if (!mounted) return;
+      setState(() {
+        _isLoadingRandom = false;
+      });
+      if (movies.isEmpty) {
+        _showMessage('Film acak tidak ditemukan');
+        return;
+      }
+      final movie = movies[_random.nextInt(movies.length)];
+      Navigator.pushNamed(context, AppRoutes.detail, arguments: movie.id);
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _isLoadingRandom = false;
+      });
+      _showMessage('Gagal memuat film acak');
     }
   }
 
@@ -216,27 +251,13 @@ class _HomeScreenState extends State<HomeScreen> {
     return Column(
       children: [
         Padding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-          child: TextField(
-            controller: _searchController,
-            style: const TextStyle(color: Colors.white),
-            decoration: InputDecoration(
-              hintText: 'Cari film...',
-              hintStyle: const TextStyle(color: Colors.white54),
-              prefixIcon: const Icon(Icons.search, color: kOrange),
-              suffixIcon: _searchController.text.isEmpty
-                  ? null
-                  : IconButton(
-                      icon: const Icon(Icons.close, color: Colors.white54),
-                      onPressed: _searchController.clear,
-                    ),
-              filled: true,
-              fillColor: kCard,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide.none,
-              ),
-            ),
+          padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
+          child: Row(
+            children: [
+              Expanded(child: _buildSearchField()),
+              const SizedBox(width: 4),
+              _buildRandomButton(),
+            ],
           ),
         ),
         _buildCategoryChips(),
@@ -244,6 +265,73 @@ class _HomeScreenState extends State<HomeScreen> {
         if (_genres.isNotEmpty) _buildGenreChips(),
         Expanded(child: _buildContent()),
       ],
+    );
+  }
+
+  Widget _buildSearchField() {
+    return TextField(
+      controller: _searchController,
+      style: const TextStyle(color: Colors.white),
+      decoration: InputDecoration(
+        hintText: 'Cari film...',
+        hintStyle: const TextStyle(color: Colors.white54),
+        prefixIcon: const Icon(Icons.search, color: kOrange),
+        suffixIcon: _searchController.text.isEmpty
+            ? null
+            : IconButton(
+                icon: const Icon(Icons.close, color: Colors.white54),
+                onPressed: _searchController.clear,
+              ),
+        filled: true,
+        fillColor: kCard,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRandomButton() {
+    return Semantics(
+      label: 'Film acak',
+      button: true,
+      enabled: !_isLoadingRandom,
+      child: Tooltip(
+        message: 'Film acak',
+        excludeFromSemantics: true,
+        child: InkWell(
+          onTap: _isLoadingRandom ? null : _openRandomMovie,
+          borderRadius: BorderRadius.circular(12),
+          child: ExcludeSemantics(
+            child: SizedBox(
+              width: 48,
+              height: 48,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: _isLoadingRandom
+                        ? const Padding(
+                            padding: EdgeInsets.all(2),
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.casino_outlined, color: kOrange),
+                  ),
+                  const SizedBox(height: 2),
+                  const Text(
+                    'Acak',
+                    maxLines: 1,
+                    style: TextStyle(color: Colors.white70, fontSize: 11),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 

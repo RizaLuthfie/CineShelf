@@ -61,6 +61,12 @@ widgets/ movie_card.dart, poster_image.dart, cast_card.dart
   debounce) lalu muat halaman 1 sumber itu. Mengetik = chip "Populer" langsung tampil terpilih,
   _category di-reset ke popular saat pencarian jalan (setelah debounce). Hapus teks = Populer.
   "Coba lagi" memuat ulang sumber aktif.
+- Film Acak di Home: tombol InkWell 48x48 berisi Column (ikon Icons.casino_outlined + teks "Acak"
+  fontSize 11 white70), tooltip dan Semantics label "Film acak", di kanan search bar dalam satu Row (HomeScreen tidak punya Scaffold sendiri, jadi bukan FAB; tidak menutupi daftar
+  atau bottom nav). Tekan = getPopularMovies(page acak 1-5), pilih satu film acak, buka detail
+  lewat AppRoutes.detail (sama seperti tap kartu). Selama memuat (_isLoadingRandom) tombol nonaktif
+  dan menampilkan indikator kecil. Hasil kosong = SnackBar "Film acak tidak ditemukan", gagal =
+  SnackBar "Gagal memuat film acak". Tidak mengubah kategori, genre, atau search.
 - Selalu cek `if (!mounted) return;` setelah await sebelum setState atau context.
 
 ## Data
