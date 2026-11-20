@@ -66,12 +66,16 @@ class MovieCard extends StatelessWidget {
                           size: 18,
                         ),
                         const SizedBox(width: 4),
-                        Text(
-                          movie.ratingLabel,
-                          style: TextStyle(
-                            color: movie.hasRating
-                                ? Colors.white
-                                : Colors.white54,
+                        Flexible(
+                          child: Text(
+                            movie.ratingLabel,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: movie.hasRating
+                                  ? Colors.white
+                                  : Colors.white54,
+                            ),
                           ),
                         ),
                       ],

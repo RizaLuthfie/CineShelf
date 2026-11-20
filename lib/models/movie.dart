@@ -31,7 +31,7 @@ class Movie {
 
   bool get hasRating => rating > 0;
 
-  String get ratingLabel => hasRating ? '$rating' : 'Belum ada rating';
+  String get ratingLabel => hasRating ? '$rating' : 'Belum dinilai';
 
   factory Movie.fromJson(Map<String, dynamic> json) {
     final String releaseDate = json['release_date'] ?? '';

@@ -34,7 +34,7 @@ widgets/ movie_card.dart, poster_image.dart, cast_card.dart
   hari ini (_formatDate), include_adult=false, vote_count.gte=50 (hanya film yang sudah rilis).
   searchMovies dan getMoviesByGenre juga mengirim include_adult=false secara eksplisit.
 - Tampilan data kosong lewat getter di Movie (bukan kolom database): yearLabel (year 0 -> "TBA"),
-  hasRating (rating > 0), ratingLabel (rating 0 -> "Belum ada rating"). Dipakai di MovieCard
+  hasRating (rating > 0), ratingLabel (rating 0 -> "Belum dinilai"). Dipakai di MovieCard
   (Home dan Daftar Tonton) dan Detail. Tanpa rating: ikon star_border white38 dan teks white54;
   Detail menambah " / 10" hanya kalau hasRating.
 - Movie punya director (String, default '') dan cast (List<CastMember>, default const []).
