@@ -136,15 +136,23 @@ class _DetailScreenState extends State<DetailScreen> {
             ),
           ),
           const SizedBox(height: 4),
-          Text('${movie.year}', style: const TextStyle(color: Colors.white54)),
+          Text(movie.yearLabel, style: const TextStyle(color: Colors.white54)),
           const SizedBox(height: 8),
           Row(
             children: [
-              const Icon(Icons.star, color: kOrange, size: 20),
+              Icon(
+                movie.hasRating ? Icons.star : Icons.star_border,
+                color: movie.hasRating ? kOrange : Colors.white38,
+                size: 20,
+              ),
               const SizedBox(width: 4),
               Text(
-                '${movie.rating} / 10',
-                style: const TextStyle(color: Colors.white),
+                movie.hasRating
+                    ? '${movie.ratingLabel} / 10'
+                    : movie.ratingLabel,
+                style: TextStyle(
+                  color: movie.hasRating ? Colors.white : Colors.white54,
+                ),
               ),
             ],
           ),

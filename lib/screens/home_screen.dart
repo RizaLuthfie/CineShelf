@@ -41,6 +41,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   final Random _random = Random();
   bool _isLoadingRandom = false;
+  final Set<int> _shownRandomIds = {};
 
   @override
   void initState() {
@@ -225,8 +226,8 @@ class _HomeScreenState extends State<HomeScreen> {
     });
 
     try {
-      final page = _random.nextInt(5) + 1;
-      final movies = await _movieService.getPopularMovies(page: page);
+      final page = _random.nextInt(10) + 1;
+      final movies = await _movieService.getReleasedMovies(page: page);
       if (!mounted) return;
       setState(() {
         _isLoadingRandom = false;
@@ -235,7 +236,12 @@ class _HomeScreenState extends State<HomeScreen> {
         _showMessage('Film acak tidak ditemukan');
         return;
       }
-      final movie = movies[_random.nextInt(movies.length)];
+      final newMovies = movies
+          .where((movie) => !_shownRandomIds.contains(movie.id))
+          .toList();
+      final choices = newMovies.isEmpty ? movies : newMovies;
+      final movie = choices[_random.nextInt(choices.length)];
+      _shownRandomIds.add(movie.id);
       Navigator.pushNamed(context, AppRoutes.detail, arguments: movie.id);
     } catch (e) {
       if (!mounted) return;

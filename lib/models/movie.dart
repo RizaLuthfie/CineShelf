@@ -27,6 +27,12 @@ class Movie {
     this.cast = const [],
   });
 
+  String get yearLabel => year == 0 ? 'TBA' : '$year';
+
+  bool get hasRating => rating > 0;
+
+  String get ratingLabel => hasRating ? '$rating' : 'Belum ada rating';
+
   factory Movie.fromJson(Map<String, dynamic> json) {
     final String releaseDate = json['release_date'] ?? '';
     final String? posterPath = json['poster_path'];

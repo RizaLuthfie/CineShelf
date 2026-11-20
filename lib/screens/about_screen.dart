@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+
 import '../constants/app_colors.dart';
 
 class AboutScreen extends StatelessWidget {
@@ -70,6 +71,12 @@ class AboutScreen extends StatelessWidget {
                   const SizedBox(height: 8),
                   const Text(
                     'Data film dan poster disediakan oleh TMDB.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: Colors.white54),
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Sebagian film dapat memuat materi untuk dewasa.',
                     textAlign: TextAlign.center,
                     style: TextStyle(color: Colors.white54),
                   ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../constants/app_colors.dart';
 import '../models/movie.dart';
 import 'poster_image.dart';
@@ -53,17 +54,25 @@ class MovieCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '${movie.year}',
+                      movie.yearLabel,
                       style: const TextStyle(color: Colors.white54),
                     ),
                     const SizedBox(height: 8),
                     Row(
                       children: [
-                        const Icon(Icons.star, color: kOrange, size: 18),
+                        Icon(
+                          movie.hasRating ? Icons.star : Icons.star_border,
+                          color: movie.hasRating ? kOrange : Colors.white38,
+                          size: 18,
+                        ),
                         const SizedBox(width: 4),
                         Text(
-                          '${movie.rating}',
-                          style: const TextStyle(color: Colors.white),
+                          movie.ratingLabel,
+                          style: TextStyle(
+                            color: movie.hasRating
+                                ? Colors.white
+                                : Colors.white54,
+                          ),
                         ),
                       ],
                     ),

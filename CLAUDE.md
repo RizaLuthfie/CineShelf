@@ -23,13 +23,20 @@ widgets/ movie_card.dart, poster_image.dart, cast_card.dart
 
 ## Arsitektur
 - Layar tidak boleh memanggil http atau database langsung. Semua data lewat service.
-- MovieService punya 7 method: getPopularMovies({page = 1}), getTopRatedMovies({page = 1}),
-  getNowPlayingMovies({page = 1}), searchMovies(query, {page = 1}), getMovieDetail(id),
-  getGenres(), getMoviesByGenre(genreId, {page = 1}). Semua mengembalikan
+- MovieService punya 8 method: getPopularMovies({page = 1}), getTopRatedMovies({page = 1}),
+  getNowPlayingMovies({page = 1}), getReleasedMovies({page = 1}), searchMovies(query, {page = 1}),
+  getMovieDetail(id), getGenres(), getMoviesByGenre(genreId, {page = 1}). Semua mengembalikan
   Future; page dikirim sebagai query parameter ke TMDB. getMovieDetail mengirim
   append_to_response=credits. getNowPlayingMovies memakai /discover/movie dengan
   region=ID, with_release_type=2|3, release_date.gte = 30 hari lalu, release_date.lte = hari ini
   (yyyy-MM-dd, diformat manual lewat _formatDate), sort_by=popularity.desc, include_adult=false.
+  getReleasedMovies memakai /discover/movie dengan sort_by=popularity.desc, release_date.lte =
+  hari ini (_formatDate), include_adult=false, vote_count.gte=50 (hanya film yang sudah rilis).
+  searchMovies dan getMoviesByGenre juga mengirim include_adult=false secara eksplisit.
+- Tampilan data kosong lewat getter di Movie (bukan kolom database): yearLabel (year 0 -> "TBA"),
+  hasRating (rating > 0), ratingLabel (rating 0 -> "Belum ada rating"). Dipakai di MovieCard
+  (Home dan Daftar Tonton) dan Detail. Tanpa rating: ikon star_border white38 dan teks white54;
+  Detail menambah " / 10" hanya kalau hasRating.
 - Movie punya director (String, default '') dan cast (List<CastMember>, default const []).
   fromJson membaca credits kalau ada: director = crew dengan job 'Director' (digabung koma),
   cast = 10 pertama dari credits.cast. toMap/fromMap tidak menyimpan director dan cast.
@@ -63,7 +70,9 @@ widgets/ movie_card.dart, poster_image.dart, cast_card.dart
   "Coba lagi" memuat ulang sumber aktif.
 - Film Acak di Home: tombol InkWell 48x48 berisi Column (ikon Icons.casino_outlined + teks "Acak"
   fontSize 11 white70), tooltip dan Semantics label "Film acak", di kanan search bar dalam satu Row (HomeScreen tidak punya Scaffold sendiri, jadi bukan FAB; tidak menutupi daftar
-  atau bottom nav). Tekan = getPopularMovies(page acak 1-5), pilih satu film acak, buka detail
+  atau bottom nav). Tekan = getReleasedMovies(page acak 1-10), pilih satu film acak (utamakan id yang belum
+  ada di Set _shownRandomIds; kalau semua sudah pernah muncul, acak biasa; id terpilih
+  ditambahkan ke Set, tidak disimpan permanen), buka detail
   lewat AppRoutes.detail (sama seperti tap kartu). Selama memuat (_isLoadingRandom) tombol nonaktif
   dan menampilkan indikator kecil. Hasil kosong = SnackBar "Film acak tidak ditemukan", gagal =
   SnackBar "Gagal memuat film acak". Tidak mengubah kategori, genre, atau search.
@@ -72,7 +81,7 @@ widgets/ movie_card.dart, poster_image.dart, cast_card.dart
 ## Data
 - Film dari TMDB (http): base URL https://api.themoviedb.org/3, header Authorization: Bearer <token>.
   Endpoint /movie/popular, /search/movie?query=..., /movie/{id}, /genre/movie/list,
-  /discover/movie?with_genres=..., /movie/top_rated (Sedang Tayang juga lewat /discover/movie, lihat di atas). Poster: https://image.tmdb.org/t/p/w500.
+  /discover/movie?with_genres=..., /movie/top_rated (Sedang Tayang dan Film Acak juga lewat /discover/movie, lihat di atas). Poster: https://image.tmdb.org/t/p/w500.
 - Daftar tonton disimpan di sqflite (package sqflite + path), file cineshelf.db, versi 1.
   Database dibuka lazy di WatchlistService, bukan di main.
 - Tabel watchlist: id INTEGER PRIMARY KEY (id TMDB), title TEXT, year INTEGER, rating REAL,

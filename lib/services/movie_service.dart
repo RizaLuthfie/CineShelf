@@ -61,6 +61,17 @@ class MovieService {
     return _parseList(data);
   }
 
+  Future<List<Movie>> getReleasedMovies({int page = 1}) async {
+    final data = await _get('/discover/movie', {
+      'sort_by': 'popularity.desc',
+      'release_date.lte': _formatDate(DateTime.now()),
+      'include_adult': 'false',
+      'vote_count.gte': '50',
+      'page': '$page',
+    });
+    return _parseList(data);
+  }
+
   String _formatDate(DateTime date) {
     final month = date.month.toString().padLeft(2, '0');
     final day = date.day.toString().padLeft(2, '0');
@@ -68,7 +79,11 @@ class MovieService {
   }
 
   Future<List<Movie>> searchMovies(String query, {int page = 1}) async {
-    final data = await _get('/search/movie', {'query': query, 'page': '$page'});
+    final data = await _get('/search/movie', {
+      'query': query,
+      'include_adult': 'false',
+      'page': '$page',
+    });
     return _parseList(data);
   }
 
@@ -86,6 +101,7 @@ class MovieService {
   Future<List<Movie>> getMoviesByGenre(int genreId, {int page = 1}) async {
     final data = await _get('/discover/movie', {
       'with_genres': '$genreId',
+      'include_adult': 'false',
       'page': '$page',
     });
     return _parseList(data);
