@@ -99,6 +99,13 @@ widgets/ movie_card.dart, poster_image.dart, cast_card.dart
 
 ## Asset dan atribusi TMDB
 - Asset didaftarkan per folder di pubspec.yaml: assets/icon/ (logo.png) dan assets/images/ (tmdb_logo.svg).
+- Ikon aplikasi lewat flutter_launcher_icons (blok flutter_icons di pubspec.yaml): image_path
+  assets/icon/logo.png; ikon adaptive Android dengan latar #051131 dan foreground
+  assets/icon/logo_foreground.png. Generate ulang dengan `dart run flutter_launcher_icons`.
+- Splash Android berlatar navy #051131 (@color/ic_launcher_background di values/colors.xml):
+  Android 12+ lewat android:windowSplashScreenBackground di LaunchTheme (values-v31 dan
+  values-night-v31/styles.xml); di bawah 12 lewat drawable/ dan drawable-v21/launch_background.xml
+  (latar solid warna itu).
 - Logo TMDB pakai flutter_svg (SvgPicture.asset), lebih kecil dari logo CineShelf, warna dan rasio tidak diubah.
 - Teks atribusi wajib persis: "This product uses the TMDB API but is not endorsed or certified by TMDB."
 - Jangan jalankan dart format pada seluruh folder (bisa menyentuh api_config.dart); format per file saja.
