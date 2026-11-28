@@ -97,12 +97,19 @@ widgets/ movie_card.dart, poster_image.dart, cast_card.dart
   "Coba lagi" memuat ulang sumber aktif.
 - Film Acak di Home: tombol InkWell 48x48 berisi Column (ikon Icons.casino_outlined + teks "Acak"
   fontSize 11 white70), tooltip dan Semantics label "Film acak", di kanan search bar dalam satu Row (HomeScreen tidak punya Scaffold sendiri, jadi bukan FAB; tidak menutupi daftar
-  atau bottom nav). Tekan = getReleasedMovies(page acak 1-10), pilih satu film acak (utamakan id yang belum
+  atau bottom nav). Tekan = buka bottom sheet pratinjau lewat showRandomMovieSheet
+  (widgets/random_movie_sheet.dart: showModalBottomSheet isScrollControlled, latar kCard, sudut atas
+  membulat 16, SafeArea). Pemilihan film tetap di Home (_loadRandomMovie, dikirim ke sheet sebagai
+  callback): getReleasedMovies(page acak 1-10), pilih satu film acak (utamakan id yang belum
   ada di Set _shownRandomIds; kalau semua sudah pernah muncul, acak biasa; id terpilih
-  ditambahkan ke Set, tidak disimpan permanen), buka detail
-  lewat AppRoutes.detail (sama seperti tap kartu). Selama memuat (_isLoadingRandom) tombol nonaktif
-  dan menampilkan indikator kecil. Hasil kosong = SnackBar "Film acak tidak ditemukan", gagal =
-  SnackBar "Gagal memuat film acak". Tidak mengubah kategori, genre, atau search.
+  ditambahkan ke Set, tidak disimpan permanen), lalu getMovieDetail(id) agar sinopsis ikut aturan
+  bahasa. Hasil kosong = null.
+  Isi sheet: poster 120x180, judul, yearLabel, rating (gaya bintang sama dengan MovieCard), sinopsis
+  maksimal 4 baris ellipsis ("Sinopsis belum tersedia." kalau kosong). Tombol "Acak Lagi" (muat film
+  acak baru di sheet yang sama) dan "Lihat Detail" (Navigator.pop dengan id film, lalu Home membuka
+  AppRoutes.detail seperti tap kartu). Saat memuat: indikator di sheet, kedua tombol nonaktif.
+  Gagal = "Gagal memuat film acak" + tombol "Coba lagi"; null = "Film acak tidak ditemukan" + "Coba lagi"
+  (Lihat Detail nonaktif). Tidak mengubah kategori, genre, atau search.
 - Selalu cek `if (!mounted) return;` setelah await sebelum setState atau context.
 
 ## Data

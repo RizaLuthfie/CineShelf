@@ -9,6 +9,7 @@ import '../models/movie.dart';
 import '../routes/app_routes.dart';
 import '../services/movie_service.dart';
 import '../widgets/movie_card.dart';
+import '../widgets/random_movie_sheet.dart';
 
 enum MovieCategory { popular, topRated, nowPlaying, genre }
 
@@ -40,7 +41,6 @@ class _HomeScreenState extends State<HomeScreen> {
   int? _selectedGenreId;
 
   final Random _random = Random();
-  bool _isLoadingRandom = false;
   final Set<int> _shownRandomIds = {};
 
   @override
@@ -218,38 +218,24 @@ class _HomeScreenState extends State<HomeScreen> {
       ..showSnackBar(SnackBar(content: Text(message)));
   }
 
-  Future<void> _openRandomMovie() async {
-    if (_isLoadingRandom) return;
-    FocusScope.of(context).unfocus();
-    setState(() {
-      _isLoadingRandom = true;
-    });
+  Future<Movie?> _loadRandomMovie() async {
+    final page = _random.nextInt(10) + 1;
+    final movies = await _movieService.getReleasedMovies(page: page);
+    if (movies.isEmpty) return null;
+    final newMovies = movies
+        .where((movie) => !_shownRandomIds.contains(movie.id))
+        .toList();
+    final choices = newMovies.isEmpty ? movies : newMovies;
+    final movie = choices[_random.nextInt(choices.length)];
+    _shownRandomIds.add(movie.id);
+    return _movieService.getMovieDetail(movie.id);
+  }
 
-    try {
-      final page = _random.nextInt(10) + 1;
-      final movies = await _movieService.getReleasedMovies(page: page);
-      if (!mounted) return;
-      setState(() {
-        _isLoadingRandom = false;
-      });
-      if (movies.isEmpty) {
-        _showMessage('Film acak tidak ditemukan');
-        return;
-      }
-      final newMovies = movies
-          .where((movie) => !_shownRandomIds.contains(movie.id))
-          .toList();
-      final choices = newMovies.isEmpty ? movies : newMovies;
-      final movie = choices[_random.nextInt(choices.length)];
-      _shownRandomIds.add(movie.id);
-      Navigator.pushNamed(context, AppRoutes.detail, arguments: movie.id);
-    } catch (e) {
-      if (!mounted) return;
-      setState(() {
-        _isLoadingRandom = false;
-      });
-      _showMessage('Gagal memuat film acak');
-    }
+  Future<void> _openRandomMovie() async {
+    FocusScope.of(context).unfocus();
+    final movieId = await showRandomMovieSheet(context, _loadRandomMovie);
+    if (!mounted || movieId == null) return;
+    Navigator.pushNamed(context, AppRoutes.detail, arguments: movieId);
   }
 
   @override
@@ -302,32 +288,22 @@ class _HomeScreenState extends State<HomeScreen> {
     return Semantics(
       label: 'Film acak',
       button: true,
-      enabled: !_isLoadingRandom,
       child: Tooltip(
         message: 'Film acak',
         excludeFromSemantics: true,
         child: InkWell(
-          onTap: _isLoadingRandom ? null : _openRandomMovie,
+          onTap: _openRandomMovie,
           borderRadius: BorderRadius.circular(12),
-          child: ExcludeSemantics(
+          child: const ExcludeSemantics(
             child: SizedBox(
               width: 48,
               height: 48,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  SizedBox(
-                    width: 24,
-                    height: 24,
-                    child: _isLoadingRandom
-                        ? const Padding(
-                            padding: EdgeInsets.all(2),
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Icon(Icons.casino_outlined, color: kOrange),
-                  ),
-                  const SizedBox(height: 2),
-                  const Text(
+                  Icon(Icons.casino_outlined, color: kOrange),
+                  SizedBox(height: 2),
+                  Text(
                     'Acak',
                     maxLines: 1,
                     style: TextStyle(color: Colors.white70, fontSize: 11),
