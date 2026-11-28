@@ -24,7 +24,7 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
-    defaultConfig {  
+    defaultConfig {
         applicationId = "com.rizaluthfie.cineshelf"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
