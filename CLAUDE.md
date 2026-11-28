@@ -55,7 +55,13 @@ widgets/ movie_card.dart, poster_image.dart, cast_card.dart
   setelah sinopsis (ListView horizontal tinggi 175, item CastCard lebar 90; disembunyikan kalau
   cast kosong). Foto profil w185, placeholder ikon person. Nama karakter maksimal 2 baris
   (ellipsis).
-- WatchlistService punya 4 method async: getWatchlist(), isInWatchlist(id), add(movie), remove(id).
+- WatchlistService punya method async: getWatchlist(), isInWatchlist(id), add(movie), update(movie),
+  setWatched(id, watched), remove(id). update memperbarui title, year, rating, poster_url, overview,
+  genres untuk id itu (watched dan added_at tetap; film yang belum tersimpan tidak ditambah).
+  Konstruktor WatchlistService.withDatabase(db) untuk test (Database palsu).
+- Detail memperbarui data Daftar Tonton: setelah getMovieDetail berhasil (_loadMovie), _syncWatchlist
+  memanggil update kalau isInWatchlist true. Jalan di latar belakang, maksimal sekali per buka Detail
+  (_hasSyncedWatchlist), gagal diabaikan tanpa SnackBar.
 - Navigasi pakai named routes: home dan about di `routes`, detail di `onGenerateRoute` (arguments: int movieId).
 - Halaman About dibuka dari ikon info_outline di AppBar MainScreen.
 - Label navigasi bawah: "Beranda" (ikon home) dan tab Daftar Tonton. Nama rute, file, dan kelas

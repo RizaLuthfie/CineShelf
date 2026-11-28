@@ -22,12 +22,32 @@ class _DetailScreenState extends State<DetailScreen> {
 
   late Future<Movie> _movieFuture;
   bool _isInWatchlist = false;
+  bool _hasSyncedWatchlist = false;
 
   @override
   void initState() {
     super.initState();
-    _movieFuture = _movieService.getMovieDetail(widget.movieId);
+    _movieFuture = _loadMovie();
     _loadWatchlistStatus();
+  }
+
+  Future<Movie> _loadMovie() async {
+    final movie = await _movieService.getMovieDetail(widget.movieId);
+    _syncWatchlist(movie);
+    return movie;
+  }
+
+  Future<void> _syncWatchlist(Movie movie) async {
+    if (_hasSyncedWatchlist) return;
+    _hasSyncedWatchlist = true;
+    try {
+      final saved = await _watchlistService.isInWatchlist(movie.id);
+      if (saved) {
+        await _watchlistService.update(movie);
+      }
+    } catch (e) {
+      return;
+    }
   }
 
   Future<void> _loadWatchlistStatus() async {
@@ -78,7 +98,7 @@ class _DetailScreenState extends State<DetailScreen> {
 
   void _retry() {
     setState(() {
-      _movieFuture = _movieService.getMovieDetail(widget.movieId);
+      _movieFuture = _loadMovie();
     });
   }
 

@@ -1,9 +1,11 @@
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
+
 import '../models/movie.dart';
 
 class WatchlistService {
   WatchlistService._();
+  WatchlistService.withDatabase(this._database);
   static final WatchlistService instance = WatchlistService._();
 
   static const String _tableName = 'watchlist';
@@ -65,6 +67,23 @@ class WatchlistService {
       _tableName,
       row,
       conflictAlgorithm: ConflictAlgorithm.ignore,
+    );
+  }
+
+  Future<void> update(Movie movie) async {
+    final db = await _getDatabase();
+    await db.update(
+      _tableName,
+      {
+        'title': movie.title,
+        'year': movie.year,
+        'rating': movie.rating,
+        'poster_url': movie.posterUrl,
+        'overview': movie.overview,
+        'genres': movie.genres.join(','),
+      },
+      where: 'id = ?',
+      whereArgs: [movie.id],
     );
   }
 
