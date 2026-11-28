@@ -41,10 +41,15 @@ class Movie {
     final Map<String, dynamic> credits = json['credits'] ?? {};
     final List<dynamic> crewList = credits['crew'] ?? [];
     final List<dynamic> castList = credits['cast'] ?? [];
+    final String title = json['title'] ?? '';
+    final String originalTitle = json['original_title'] ?? '';
+    final bool isIndonesian = json['original_language'] == 'id';
 
     return Movie(
       id: json['id'],
-      title: json['title'] ?? '',
+      title: isIndonesian && originalTitle.trim().isNotEmpty
+          ? originalTitle
+          : title,
       year: releaseDate.length >= 4
           ? int.tryParse(releaseDate.substring(0, 4)) ?? 0
           : 0,

@@ -162,6 +162,15 @@ void main() {
     expect(find.text('Cari film...'), findsOneWidget);
   });
 
+  testWidgets('Navigasi bawah memakai label Beranda', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(const CineShelfApp());
+
+    expect(find.text('Beranda'), findsOneWidget);
+    expect(find.text('Home'), findsNothing);
+  });
+
   testWidgets('Ikon info membuka halaman About dengan atribusi TMDB', (
     WidgetTester tester,
   ) async {

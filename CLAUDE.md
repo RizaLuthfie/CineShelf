@@ -26,13 +26,24 @@ widgets/ movie_card.dart, poster_image.dart, cast_card.dart
 - MovieService punya 8 method: getPopularMovies({page = 1}), getTopRatedMovies({page = 1}),
   getNowPlayingMovies({page = 1}), getReleasedMovies({page = 1}), searchMovies(query, {page = 1}),
   getMovieDetail(id), getGenres(), getMoviesByGenre(genreId, {page = 1}). Semua mengembalikan
-  Future; page dikirim sebagai query parameter ke TMDB. getMovieDetail mengirim
-  append_to_response=credits. getNowPlayingMovies memakai /discover/movie dengan
+  Future; page dikirim sebagai query parameter ke TMDB. getNowPlayingMovies memakai /discover/movie dengan
   region=ID, with_release_type=2|3, release_date.gte = 30 hari lalu, release_date.lte = hari ini
   (yyyy-MM-dd, diformat manual lewat _formatDate), sort_by=popularity.desc, include_adult=false.
   getReleasedMovies memakai /discover/movie dengan sort_by=popularity.desc, release_date.lte =
   hari ini (_formatDate), include_adult=false, vote_count.gte=50 (hanya film yang sudah rilis).
   searchMovies dan getMoviesByGenre juga mengirim include_adult=false secara eksplisit.
+- Bahasa: language ditambahkan di _get (default 'en-US'). Semua daftar film dan detail memakai
+  en-US; hanya getGenres memakai id-ID. MovieService menerima http.Client opsional di konstruktor
+  (untuk test pakai MockClient).
+- Aturan judul (Movie.fromJson): original_language == 'id' -> original_title (kalau kosong setelah
+  trim, pakai title); selain itu title en-US.
+- getGenres menyimpan hasil di _genres (cache per instance MovieService), dipanggil ulang tanpa
+  request baru.
+- getMovieDetail: satu request /movie/{id} en-US dengan append_to_response=credits,translations.
+  Overview dari translations.translations entri iso_639_1 'id' (data.overview, tidak kosong
+  setelah trim), selain itu overview en-US. Nama genre diterjemahkan per id lewat getGenres
+  (id-ID); gagal memuat atau id tidak ada = nama en-US. Detail menampilkan
+  "Sinopsis belum tersedia." kalau overview tetap kosong.
 - Tampilan data kosong lewat getter di Movie (bukan kolom database): yearLabel (year 0 -> "TBA"),
   hasRating (rating > 0), ratingLabel (rating 0 -> "Belum dinilai"). Dipakai di MovieCard
   (Home dan Daftar Tonton) dan Detail. Tanpa rating: ikon star_border white38 dan teks white54;
@@ -47,6 +58,8 @@ widgets/ movie_card.dart, poster_image.dart, cast_card.dart
 - WatchlistService punya 4 method async: getWatchlist(), isInWatchlist(id), add(movie), remove(id).
 - Navigasi pakai named routes: home dan about di `routes`, detail di `onGenerateRoute` (arguments: int movieId).
 - Halaman About dibuka dari ikon info_outline di AppBar MainScreen.
+- Label navigasi bawah: "Beranda" (ikon home) dan tab Daftar Tonton. Nama rute, file, dan kelas
+  tetap home/HomeScreen.
 - Detail pakai FutureBuilder (loading, error + tombol coba lagi, kosong, data).
 - Daftar Tonton pakai state lokal: _movies (List<Movie>), _isLoading, _hasError. Database dimuat
   sekali di initState (loading hanya saat itu atau "Coba lagi"). Centang = ganti film di _movies

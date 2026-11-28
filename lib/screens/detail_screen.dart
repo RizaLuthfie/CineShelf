@@ -189,7 +189,9 @@ class _DetailScreenState extends State<DetailScreen> {
           ),
           const SizedBox(height: 6),
           Text(
-            movie.overview,
+            movie.overview.trim().isEmpty
+                ? 'Sinopsis belum tersedia.'
+                : movie.overview,
             style: const TextStyle(color: Colors.white70, height: 1.5),
           ),
           if (movie.cast.isNotEmpty) ...[

@@ -9,6 +9,11 @@ import '../models/movie.dart';
 class MovieService {
   static const String _baseUrl = 'https://api.themoviedb.org/3';
 
+  final http.Client _client;
+  List<Genre>? _genres;
+
+  MovieService({http.Client? client}) : _client = client ?? http.Client();
+
   Map<String, String> get _headers => {
     'Authorization': 'Bearer $tmdbReadAccessToken',
     'Accept': 'application/json',
@@ -17,11 +22,13 @@ class MovieService {
   Future<Map<String, dynamic>> _get(
     String path, [
     Map<String, String>? query,
+    String language = 'en-US',
   ]) async {
-    final uri = Uri.parse('$_baseUrl$path').replace(queryParameters: query);
+    final uri = Uri.parse('$_baseUrl$path')
+        .replace(queryParameters: {...?query, 'language': language});
     final http.Response response;
     try {
-      response = await http.get(uri, headers: _headers);
+      response = await _client.get(uri, headers: _headers);
     } catch (e) {
       throw Exception('Gagal memuat data: tidak ada koneksi');
     }
@@ -88,14 +95,60 @@ class MovieService {
   }
 
   Future<Movie> getMovieDetail(int id) async {
-    final data = await _get('/movie/$id', {'append_to_response': 'credits'});
+    final data = await _get('/movie/$id', {
+      'append_to_response': 'credits,translations',
+    });
+    final indonesianOverview = _indonesianOverview(data);
+    if (indonesianOverview.isNotEmpty) {
+      data['overview'] = indonesianOverview;
+    }
+    data['genres'] = await _translateGenres(data['genres'] ?? []);
     return Movie.fromJson(data);
   }
 
+  String _indonesianOverview(Map<String, dynamic> data) {
+    final Map<String, dynamic> translations = data['translations'] ?? {};
+    final List<dynamic> list = translations['translations'] ?? [];
+    String result = '';
+    for (final item in list) {
+      if (item['iso_639_1'] != 'id') continue;
+      final Map<String, dynamic> info = item['data'] ?? {};
+      final String overview = (info['overview'] ?? '').trim();
+      if (overview.isEmpty) continue;
+      if (item['iso_3166_1'] == 'ID') return overview;
+      if (result.isEmpty) result = overview;
+    }
+    return result;
+  }
+
+  Future<List<dynamic>> _translateGenres(List<dynamic> genres) async {
+    final Map<int, String> names = {};
+    try {
+      final indonesianGenres = await getGenres();
+      for (final genre in indonesianGenres) {
+        names[genre.id] = genre.name;
+      }
+    } catch (e) {
+      return genres;
+    }
+    return genres
+        .map(
+          (genre) => {
+            'id': genre['id'],
+            'name': names[genre['id']] ?? genre['name'],
+          },
+        )
+        .toList();
+  }
+
   Future<List<Genre>> getGenres() async {
-    final data = await _get('/genre/movie/list');
+    final cached = _genres;
+    if (cached != null) return cached;
+    final data = await _get('/genre/movie/list', null, 'id-ID');
     final List<dynamic> genres = data['genres'] ?? [];
-    return genres.map((item) => Genre.fromJson(item)).toList();
+    final result = genres.map((item) => Genre.fromJson(item)).toList();
+    _genres = result;
+    return result;
   }
 
   Future<List<Movie>> getMoviesByGenre(int genreId, {int page = 1}) async {
